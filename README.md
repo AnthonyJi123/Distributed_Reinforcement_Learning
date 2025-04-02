@@ -13,7 +13,7 @@ This project implements a distributed reinforcement learning (RLHF) system for t
 - **Built-in Monitoring**: Track training progress with visualization tools
 - **Configurable**: Customize training parameters via YAML configs
 
-## Architecture
+## System Architecture
 
 The system consists of several key components:
 
@@ -26,6 +26,122 @@ The system consists of several key components:
    - Parameter Server Architecture
    - Distributed Data Parallel Training
 4. **Data Management**: Efficient data loading and preprocessing
+
+```mermaid
+graph TB
+    subgraph "Distributed Training Infrastructure"
+        Ray[Ray Cluster]
+        PS[Parameter Server]
+        W1[Worker 1]
+        W2[Worker 2]
+        W3[Worker 3]
+        W4[Worker 4]
+        
+        Ray --> PS
+        Ray --> W1
+        Ray --> W2
+        Ray --> W3
+        Ray --> W4
+        PS <--> W1
+        PS <--> W2
+        PS <--> W3
+        PS <--> W4
+    end
+    
+    subgraph "Training Pipeline"
+        SFT[SFT Training]
+        RM[Reward Model]
+        PPO[PPO Training]
+        
+        SFT --> RM
+        RM --> PPO
+    end
+    
+    subgraph "Data Flow"
+        Demo[Demo Data]
+        Pref[Preference Data]
+        Prompts[Prompts]
+        
+        Demo --> SFT
+        Pref --> RM
+        Prompts --> PPO
+    end
+    
+    subgraph "Model Components"
+        Base[Base Model]
+        Value[Value Head]
+        Reward[Reward Head]
+        
+        Base --> Value
+        Base --> Reward
+    end
+```
+
+The RLHF training process follows this sequence:
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant R as Ray Cluster
+    participant P as Policy Model
+    participant RM as Reward Model
+    participant Ref as Reference Model
+    
+    Note over C,R: Supervised Fine-Tuning (SFT)
+    C->>R: Load demonstration data
+    R->>P: Train on demonstrations
+    P-->>C: Save SFT model
+    
+    Note over C,R: Reward Model Training
+    C->>R: Load preference data
+    R->>RM: Train on preferences
+    RM-->>C: Save reward model
+    
+    Note over C,R: PPO Training
+    C->>R: Load prompts
+    loop For each iteration
+        R->>P: Generate completions
+        P->>RM: Get rewards
+        RM-->>P: Return rewards
+        P->>P: Update policy
+        P->>Ref: Compute KL divergence
+        Ref-->>P: Return KL penalty
+        P-->>C: Report metrics
+    end
+    P-->>C: Save final model
+```
+
+The model architecture is built on a GPT-2 base with specialized heads:
+
+```mermaid
+graph LR
+    subgraph "Base Model (GPT-2)"
+        Embed[Embeddings]
+        Trans[Transformer Blocks]
+        Norm[Layer Norm]
+        LM[LM Head]
+        
+        Embed --> Trans
+        Trans --> Norm
+        Norm --> LM
+    end
+    
+    subgraph "Reward Model"
+        Base[Base Model]
+        RH[Reward Head]
+        
+        Base --> RH
+    end
+    
+    subgraph "PPO Model"
+        Policy[Policy Model]
+        VH[Value Head]
+        
+        Policy --> VH
+    end
+    
+    Base -.-> Policy
+```
 
 ## Project Structure
 
