@@ -1,0 +1,42 @@
+# Distributed training configuration
+
+# Ray cluster configuration
+cluster:
+  head_address: "localhost:6379"  # Ray head node address
+  num_workers: 4                  # Number of worker nodes
+  resources_per_worker:
+    CPU: 8
+    GPU: 1
+  object_store_memory: 20_000_000_000  # 20GB
+  redis_max_memory: 10_000_000_000     # 10GB
+
+# Distributed training strategy
+strategy:
+  type: "data_parallel"  # Options: data_parallel, model_parallel, pipeline_parallel, hybrid
+  sync_params_every: 10  # Synchronize parameters every N steps
+  
+  # Data parallel specific settings
+  data_parallel:
+    gradient_avg: true
+    
+  # Model parallel specific settings (for large models)
+  model_parallel:
+    enabled: false
+    tensor_parallel_size: 2
+    pipeline_parallel_size: 2
+    
+  # Pipeline parallel settings
+  pipeline:
+    chunks: 4
+    microbatch_size: 4
+
+# Fault tolerance settings
+fault_tolerance:
+  checkpoint_interval: 1000  # Save checkpoint every N steps
+  max_failures: 3           # Max worker failures before stopping
+  timeout: 1800             # Timeout for worker operations (in seconds)
+  
+# Communication settings
+communication:
+  compression: "fp16"  # Options: none, fp16, quantized
+  bandwidth_limit: 10_000_000_000  # 10GB/s 

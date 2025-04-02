@@ -1,0 +1,44 @@
+# Model configuration
+model:
+  type: "gpt2"  # Base model architecture
+  n_layers: 12  # Number of transformer layers
+  n_heads: 12   # Number of attention heads
+  dim: 768      # Hidden dimension size
+  max_seq_len: 1024  # Maximum sequence length
+  vocab_size: 50257  # Vocabulary size
+
+# Training configuration
+training:
+  batch_size: 32
+  grad_accumulation_steps: 8
+  learning_rate: 5.0e-5
+  warmup_steps: 1000
+  weight_decay: 0.01
+  clip_grad_norm: 1.0
+  optimizer: "adam"
+  scheduler: "cosine"
+  max_steps: 100000
+  save_every: 1000
+  eval_every: 500
+  
+# RLHF configuration
+rlhf:
+  sft:
+    batch_size: 16
+    learning_rate: 1.0e-5
+    num_epochs: 3
+  
+  reward_model:
+    batch_size: 16
+    learning_rate: 5.0e-6
+    num_epochs: 3
+    
+  ppo:
+    batch_size: 8
+    learning_rate: 5.0e-7
+    num_rollouts: 512
+    ppo_epochs: 4
+    value_loss_coef: 0.1
+    entropy_coef: 0.01
+    clip_range: 0.2
+    max_grad_norm: 0.5 
